@@ -1,5 +1,6 @@
 import System.IO
 import Data.List
+import Data.Matrix
 
 stdev :: [Double] -> Double
 stdev xs = sqrt . average . map ((^2) . (-) axs) $ xs
@@ -19,6 +20,8 @@ takeTrainNaive n = reverse . take n . reverse
 
 takeTestNaive :: Int -> [a] -> [a]
 takeTestNaive n = take n
+
+dot a b = multStrassenMixed (fromLists a) (fromLists b)
 
 accuracy :: [Int] -> [Int] -> Double
 accuracy list1 list2 
