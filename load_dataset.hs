@@ -1,6 +1,13 @@
 import System.IO
 import Data.List
 
+stdev :: [Double] -> Double
+stdev xs = sqrt . average . map ((^2) . (-) axs) $ xs
+           where average = (/) <$> sum <*> realToFrac . length
+                 axs     = average xs
+
+
+
 sigmoid :: Double -> Double
 sigmoid x = 1 / (1 + exp (-x))
 
@@ -24,8 +31,10 @@ absoluteAccuracy (h:t) (h2:t2)
     | h == h2 = 1 + absoluteAccuracy t t2
     | otherwise = 0 + absoluteAccuracy t t2
 
+
 main = do
-    
+    let nn_structure = [64, 30, 10]
+
     target_contents <- readFile "target.txt"
     let a = map read $ words target_contents :: [Int]
     
@@ -33,8 +42,8 @@ main = do
     let y_train = takeTrainNaive 719 a
     let y_test = takeTestNaive 1078 a
 
-    let x = sigmoid 5
+    let x = map deriv_f [5, 1, 3, 4]
 
-    let y = accuracy [1, 2, 3, 5] [1, 2, 4, 5]
+    let y = accuracy [1, 2, 3, 5, 4, 5, 6, 6, 7, 6, 7, 8, 8, 7, 8, 9] [1, 2, 4, 5, 4, 5, 6,6, 7,6, 7, 8,8, 7, 8, 9]
 
-    print y
+    print x
