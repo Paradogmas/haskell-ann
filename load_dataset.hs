@@ -2,7 +2,6 @@ import System.IO
 import Data.List
 import Control.Monad (liftM)
 import Control.Monad (replicateM)
-import Data.Matrix
 
 variancia :: [Double] -> Double -> [Double]
 variancia xs m = [(x_new-m)**2 | x_new<-xs]
@@ -47,7 +46,21 @@ takeTrainNaive n = reverse . take n . reverse
 takeTestNaive :: Int -> [a] -> [a]
 takeTestNaive n = take n
 
-dot a b = multStrassenMixed (fromLists a) (fromLists b)
+foldlZipWith::(a -> b -> c) -> (d -> c -> d) -> d -> [a] -> [b]  -> d
+foldlZipWith _ _ u [] _          = u
+foldlZipWith _ _ u _ []          = u
+foldlZipWith f g u (x:xs) (y:ys) = foldlZipWith f g (g u (f x y)) xs ys
+ 
+foldl1ZipWith::(a -> b -> c) -> (c -> c -> c) -> [a] -> [b] -> c
+foldl1ZipWith _ _ [] _          = error "First list is empty"
+foldl1ZipWith _ _ _ []          = error "Second list is empty"
+foldl1ZipWith f g (x:xs) (y:ys) = foldlZipWith f g (f x y) xs ys
+ 
+multAdd::(a -> b -> c) -> (c -> c -> c) -> [[a]] -> [[b]] -> [[c]]
+multAdd f g xs ys = map (\us -> foldl1ZipWith (\u vs -> map (f u) vs) (zipWith g) us ys) xs
+ 
+dot:: Num a => [[a]] -> [[a]] -> [[a]]
+dot xs ys = multAdd (*) (+) xs ys
     
 accuracy :: [Int] -> [Int] -> Double
 accuracy list1 list2 
@@ -64,8 +77,10 @@ absoluteAccuracy (h:t) (h2:t2)
 main = do
     let nn_structure = [64, 30, 10]
 
+    let c = dot [[1, 2],[3, 4]] [[-3, -8, 3],[-2,  1, 4]]
+
     target_contents <- readFile "target.txt"
-    let a = map read $ words target_contents :: [Double]
+    let a = map read $ words target_contents :: [Int]
     
     -- scalling the data
     let x_mean = mean [1, 2, 3, 5, 4, 5, 6, 6, 7, 6, 7, 8, 8, 7, 8, 9]
@@ -80,4 +95,4 @@ main = do
 
     let y = accuracy [1, 2, 3, 5, 4, 5, 6, 6, 7, 6, 7, 8, 8, 7, 8, 9] [1, 2, 4, 5, 4, 5, 6,6, 7,6, 7, 8,8, 7, 8, 9]
 
-    print x_scale
+    print c
