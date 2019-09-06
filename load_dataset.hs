@@ -2,12 +2,17 @@ import System.IO
 import Data.List
 import Data.Matrix
 
-stdev :: [Double] -> Double
-stdev xs = sqrt . average . map ((^2) . (-) axs) $ xs
-           where average = (/) <$> sum <*> realToFrac . length
-                 axs     = average xs
+variancia :: [Double] -> Double -> [Double]
+variancia xs m = [(x_new-m)**2 | x_new<-xs]
 
+stdev :: [Double] -> Double -> Double
+stdev xs m = sqrt(sum (variancia xs m)  / fromIntegral (length xs -1))
 
+mean :: [Double] -> Double
+mean xs = sum xs / fromIntegral (length xs)
+
+scaleData :: [Double] -> Double -> Double -> [Double]
+scaleData x mean stdev = [(x_new-mean) / stdev | x_new<-x]
 
 sigmoid :: Double -> Double
 sigmoid x = 1 / (1 + exp (-x))
@@ -39,7 +44,12 @@ main = do
     let nn_structure = [64, 30, 10]
 
     target_contents <- readFile "target.txt"
-    let a = map read $ words target_contents :: [Int]
+    let a = map read $ words target_contents :: [Double]
+    
+    -- scalling the data
+    let x_mean = mean [1, 2, 3, 5, 4, 5, 6, 6, 7, 6, 7, 8, 8, 7, 8, 9]
+    let x_stdev = stdev [1, 2, 3, 5, 4, 5, 6, 6, 7, 6, 7, 8, 8, 7, 8, 9] x_mean
+    let x_scale = scaleData [1, 2, 3, 5, 4, 5, 6, 6, 7, 6, 7, 8, 8, 7, 8, 9] x_mean x_stdev
     
     -- splitting the data
     let y_train = takeTrainNaive 719 a
@@ -49,4 +59,4 @@ main = do
 
     let y = accuracy [1, 2, 3, 5, 4, 5, 6, 6, 7, 6, 7, 8, 8, 7, 8, 9] [1, 2, 4, 5, 4, 5, 6,6, 7,6, 7, 8,8, 7, 8, 9]
 
-    print x
+    print x_scale
