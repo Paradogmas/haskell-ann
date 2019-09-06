@@ -1,5 +1,6 @@
 import System.IO
 import Data.List
+import Data.Matrix
 
 sigmoid :: Double -> Double
 sigmoid x = 1 / (1 + exp (-x))
@@ -12,6 +13,8 @@ takeTrainNaive n = reverse . take n . reverse
 
 takeTestNaive :: Int -> [a] -> [a]
 takeTestNaive n = take n
+
+dot a b = multStrassenMixed (fromLists a) (fromLists b)
 
 main = do
     
