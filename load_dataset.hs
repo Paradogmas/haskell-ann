@@ -1,6 +1,12 @@
 import System.IO
 import Data.List
 
+sigmoid :: Double -> Double
+sigmoid x = 1 / (1 + exp (-x))
+
+deriv_f :: Double -> Double
+deriv_f x = sigmoid x * (1 - sigmoid x )
+
 takeTrainNaive :: Int -> [a] -> [a]
 takeTrainNaive n = reverse . take n . reverse 
 
@@ -8,14 +14,14 @@ takeTestNaive :: Int -> [a] -> [a]
 takeTestNaive n = take n
 
 main = do
-
-    data_set <- readFile "dataset.txt"
-    print $ data_set
-
+    
     target_contents <- readFile "target.txt"
-    -- print $ target_contents
     let a = map read $ words target_contents :: [Int]
+    
     -- splitting the data
-    let x_train = takeTrainNaive 719 a
-    let x_test = takeTestNaive 1078 a
-    print $ x_train
+    let y_train = takeTrainNaive 719 a
+    let y_test = takeTestNaive 1078 a
+
+    let x = sigmoid 5
+
+    print x
