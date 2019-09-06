@@ -5,13 +5,24 @@ sigmoid :: Double -> Double
 sigmoid x = 1 / (1 + exp (-x))
 
 deriv_f :: Double -> Double
-deriv_f x = sigmoid x * (1 - sigmoid x )
+deriv_f x = sigmoid x * (1 - sigmoid x)
 
 takeTrainNaive :: Int -> [a] -> [a]
 takeTrainNaive n = reverse . take n . reverse 
 
 takeTestNaive :: Int -> [a] -> [a]
 takeTestNaive n = take n
+
+accuracy :: [Int] -> [Int] -> Double
+accuracy list1 list2 
+    | length list1 /= length list2 = 0
+    | length list1 == length list2 = fromIntegral (absoluteAccuracy list1 list2) / fromIntegral (length list1)
+
+absoluteAccuracy :: [Int] -> [Int] -> Int
+absoluteAccuracy [] _ = 0
+absoluteAccuracy (h:t) (h2:t2) 
+    | h == h2 = 1 + absoluteAccuracy t t2
+    | otherwise = 0 + absoluteAccuracy t t2
 
 main = do
     
@@ -24,4 +35,6 @@ main = do
 
     let x = sigmoid 5
 
-    print x
+    let y = accuracy [1, 2, 3, 5] [1, 2, 4, 5]
+
+    print y
