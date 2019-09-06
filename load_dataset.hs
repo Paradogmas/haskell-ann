@@ -1,5 +1,7 @@
 import System.IO
 import Data.List
+import Control.Monad (liftM)
+import Control.Monad (replicateM)
 import Data.Matrix
 
 variancia :: [Double] -> Double -> [Double]
@@ -14,6 +16,25 @@ mean xs = sum xs / fromIntegral (length xs)
 scaleData :: [Double] -> Double -> Double -> [Double]
 scaleData x mean stdev = [(x_new-mean) / stdev | x_new<-x]
 
+parse_lines :: [String] -> (Int, Int, [Int], [[Int]])
+parse_lines (mn_line : ks_line : matrix_lines) = (m, n, ks, matrix)
+    where [m, n] = read_ints    mn_line
+          ks     = read_ints    ks_line
+          matrix = parse_matrix matrix_lines
+
+read_ints :: String -> [Int]
+read_ints = map read . words
+
+parse_matrix :: [String] -> [[Int]]
+parse_matrix lines = parse_matrix' lines []
+    where parse_matrix' []       acc = reverse acc
+          parse_matrix' (l : ls) acc = parse_matrix' ls $ (read_ints l) : acc
+
+parse_file :: FilePath -> IO (Int, Int, [Int], [[Int]])
+parse_file filename = do
+    file_lines <- (liftM lines . readFile) filename
+    return $ parse_lines file_lines
+
 sigmoid :: Double -> Double
 sigmoid x = 1 / (1 + exp (-x))
 
@@ -27,7 +48,7 @@ takeTestNaive :: Int -> [a] -> [a]
 takeTestNaive n = take n
 
 dot a b = multStrassenMixed (fromLists a) (fromLists b)
-
+    
 accuracy :: [Int] -> [Int] -> Double
 accuracy list1 list2 
     | length list1 /= length list2 = 0
