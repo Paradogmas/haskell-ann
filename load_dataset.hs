@@ -3,6 +3,12 @@ import Data.List
 import Control.Monad (liftM)
 import Control.Monad (replicateM)
 
+sumMatrices :: [[Double]] -> [[Double]] -> [[Double]]
+sumMatrices a b = [(zipWith (+) ha hb) | ha <- a, hb <- b]
+
+zero :: Int -> Int -> [[Double]]
+zero x y = replicate y (replicate x 0)
+
 variancia :: [Double] -> Double -> [Double]
 variancia xs m = [(x_new-m)**2 | x_new<-xs]
 
@@ -95,4 +101,7 @@ main = do
 
     let y = accuracy [1, 2, 3, 5, 4, 5, 6, 6, 7, 6, 7, 8, 8, 7, 8, 9] [1, 2, 4, 5, 4, 5, 6,6, 7,6, 7, 8,8, 7, 8, 9]
 
-    print c
+    let azero = zero 3 3
+    let hdf = replicate 3 (replicate 3 2)
+    let res = sumMatrices azero hdf
+    print $ res
