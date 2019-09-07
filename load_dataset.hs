@@ -2,9 +2,10 @@ import System.IO
 import Data.List
 import Control.Monad (liftM)
 import Control.Monad (replicateM)
+import Data.Typeable
 
 init_tri_W_values :: ([[Double]], [[Double]])
-init_tri_W_values = (zero 64 30, zero 30 10)
+init_tri_W_values = (zero 30 64, zero 10 30)
 
 init_tri_b_values :: ([Double], [Double])
 init_tri_b_values = (replicate 30 0, replicate 10 0)
@@ -27,21 +28,19 @@ mean xs = sum xs / fromIntegral (length xs)
 scaleData :: [Double] -> Double -> Double -> [Double]
 scaleData x mean stdev = [(x_new-mean) / stdev | x_new<-x]
 
-parse_lines :: [String] -> (Int, Int, [Int], [[Int]])
-parse_lines (mn_line : ks_line : matrix_lines) = (m, n, ks, matrix)
-    where [m, n] = read_ints    mn_line
-          ks     = read_ints    ks_line
-          matrix = parse_matrix matrix_lines
+parse_lines :: [String] -> ([[Double]])
+parse_lines (mn_line : ks_line : matrix_lines) = (matrix)
+    where matrix = parse_matrix matrix_lines
 
-read_ints :: String -> [Int]
+read_ints :: String -> [Double]
 read_ints = map read . words
 
-parse_matrix :: [String] -> [[Int]]
+parse_matrix :: [String] -> [[Double]]
 parse_matrix lines = parse_matrix' lines []
     where parse_matrix' []       acc = reverse acc
           parse_matrix' (l : ls) acc = parse_matrix' ls $ (read_ints l) : acc
 
-parse_file :: FilePath -> IO (Int, Int, [Int], [[Int]])
+parse_file :: FilePath ->  IO ([[Double]])
 parse_file filename = do
     file_lines <- (liftM lines . readFile) filename
     return $ parse_lines file_lines
@@ -87,17 +86,21 @@ absoluteAccuracy (h:t) (h2:t2)
 
 
 main = do
-    let nn_structure = [64, 30, 10]
+    let nn_structure = [64, 30, 10] -- input, hidden, output
 
-    let c = dot [[1, 2],[3, 4]] [[-3, -8, 3],[-2,  1, 4]]
+    -- reading and parsing dataset
+    let b = parse_file "dataset.txt"
+    data_set <- b
 
+    -- reading and parsing target
     target_contents <- readFile "target.txt"
     let a = map read $ words target_contents :: [Int]
     
     -- scalling the data
-    let x_mean = mean [1, 2, 3, 5, 4, 5, 6, 6, 7, 6, 7, 8, 8, 7, 8, 9]
-    let x_stdev = stdev [1, 2, 3, 5, 4, 5, 6, 6, 7, 6, 7, 8, 8, 7, 8, 9] x_mean
-    let x_scale = scaleData [1, 2, 3, 5, 4, 5, 6, 6, 7, 6, 7, 8, 8, 7, 8, 9] x_mean x_stdev
+    let matrixC = concat data_set 
+    let x_mean = mean matrixC
+    let x_stdev = stdev matrixC x_mean
+    let x_scale = [ scaleData y x_mean x_stdev | y <- data_set ]
     
     -- splitting the data
     let y_train = takeTrainNaive 719 a
@@ -108,6 +111,7 @@ main = do
     let tri_b = init_tri_b_values
 
     -- testing area
+    let c = dot [[1, 2],[3, 4]] [[-3, -8, 3],[-2,  1, 4]]
     let x = map deriv_f [5, 1, 3, 4]
     let y = accuracy [1, 2, 3, 5, 4, 5, 6, 6, 7, 6, 7, 8, 8, 7, 8, 9] [1, 2, 4, 5, 4, 5, 6,6, 7,6, 7, 8,8, 7, 8, 9]
 
@@ -116,4 +120,4 @@ main = do
 
     let res = sumMatrices azero hdf
 
-    print $ tri_b
+    print x_scale
