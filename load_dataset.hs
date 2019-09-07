@@ -2,6 +2,7 @@ import System.IO
 import Data.List
 import Control.Monad (liftM)
 import Control.Monad (replicateM)
+import System.Random
 
 init_tri_W_values :: ([[Double]], [[Double]])
 init_tri_W_values = (zero 64 30, zero 30 10)
@@ -84,6 +85,18 @@ absoluteAccuracy [] _ = 0
 absoluteAccuracy (h:t) (h2:t2) 
     | h == h2 = 1 + absoluteAccuracy t t2
     | otherwise = 0 + absoluteAccuracy t t2
+
+
+--random_gen_W :: Int -> Int -> [[Double]]
+random_gen_W y z = do
+    g <- getStdGen
+    let ys = take y $ randomRs (0, 1000) g
+    let zs = take z $ randomRs (0, 1000) g
+    return (ys, zs)
+    --show zs
+
+{--setup_and_init_weights :: [Int] -> ([[Double]], [[Double]])
+setup_and_init_weights nn_structure = do--}
 
 
 main = do
