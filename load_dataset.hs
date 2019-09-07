@@ -3,6 +3,12 @@ import Data.List
 import Control.Monad (liftM)
 import Control.Monad (replicateM)
 
+init_tri_W_values :: ([[Double]], [[Double]])
+init_tri_W_values = (zero 64 30, zero 30 10)
+
+init_tri_b_values :: ([Double], [Double])
+init_tri_b_values = (replicate 30 0, replicate 10 0)
+
 sumMatrices :: [[Double]] -> [[Double]] -> [[Double]]
 sumMatrices a b = [(zipWith (+) ha hb) | ha <- a, hb <- b]
 
@@ -97,11 +103,17 @@ main = do
     let y_train = takeTrainNaive 719 a
     let y_test = takeTestNaive 1078 a
 
-    let x = map deriv_f [5, 1, 3, 4]
+    -- initializing tri values
+    let tri_W = init_tri_W_values
+    let tri_b = init_tri_b_values
 
+    -- testing area
+    let x = map deriv_f [5, 1, 3, 4]
     let y = accuracy [1, 2, 3, 5, 4, 5, 6, 6, 7, 6, 7, 8, 8, 7, 8, 9] [1, 2, 4, 5, 4, 5, 6,6, 7,6, 7, 8,8, 7, 8, 9]
 
     let azero = zero 3 3
     let hdf = replicate 3 (replicate 3 2)
+
     let res = sumMatrices azero hdf
-    print $ res
+
+    print $ tri_b
