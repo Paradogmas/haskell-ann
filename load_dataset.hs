@@ -87,13 +87,21 @@ absoluteAccuracy (h:t) (h2:t2)
     | otherwise = 0 + absoluteAccuracy t t2
 
 
+random_float :: [Double] -> [Double]
+random_float [] = []
+random_float i = (head i)/1000:random_float (tail i)
+
+--random_float [] = 0
+
 --random_gen_W :: Int -> Int -> [[Double]]
+-- setting and initializing weight and bias
 random_gen_W y z = do
     g <- getStdGen
     let ys = take y $ randomRs (0, 1000) g
     let zs = take z $ randomRs (0, 1000) g
-    return (ys, zs)
-    --show zs
+    let f_ys = random_float ys
+    let f_zs = random_float zs
+    return (f_ys, f_zs)
 
 {--setup_and_init_weights :: [Int] -> ([[Double]], [[Double]])
 setup_and_init_weights nn_structure = do--}
@@ -128,5 +136,7 @@ main = do
     let hdf = replicate 3 (replicate 3 2)
 
     let res = sumMatrices azero hdf
+    -- initializing 
+    let w = random_gen_W 30 10
 
     print $ tri_b
