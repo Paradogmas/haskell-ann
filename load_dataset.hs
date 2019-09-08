@@ -133,13 +133,16 @@ calc_zn x w b = zipWith (+) fst b
 remove_bracket x = do
     return x!!0
 
-feed_forward::[Double]->[[Double]]->[[Double]]->[Double]->[Double]->[Double]
+feed_forward::[Double]->[[Double]]->[[Double]]->[Double]->[Double]->([Double], [Double])
 feed_forward x w1 w2 b1 b2 = do
     let z2_temp = calc_zn x w1 b1
     z2<-remove_bracket z2_temp
     let h1 = x
     let h2 = sigmoid z2
-    return z2
+    let z3_temp = calc_zn [h2] w2 b2
+    z3<-remove_bracket z3_temp
+    let h3 = sigmoid z3
+    return z2, z3
 
 main = do
     -- setting neural network structure
