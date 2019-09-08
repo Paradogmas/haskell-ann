@@ -2,8 +2,13 @@ import System.IO
 import Data.List
 import Control.Monad (liftM)
 import Control.Monad (replicateM)
+import Control.Monad.Cont
 import Data.Typeable
 import System.Random
+import Data.Ord
+
+maxIndex :: Ord a => [a] -> Int
+maxIndex = fst . maximumBy (comparing snd) . zip[0..]
 
 sumList :: [Double] -> Double
 sumList [] = 0
@@ -158,11 +163,11 @@ main = do
     let x_scale = [ scaleData y x_mean x_stdev | y <- data_set ]
     
     -- splitting the data
-    let y_train = takeTrainNaive 719 a
-    let y_test = takeTestNaive 1078 a
+    let y_train = takeTrainNaive 1078 a
+    let y_test = takeTestNaive 719 a
 
-    let x_train = takeTrainMatrixNaive 719 x_scale
-    let x_test = takeTestMatrixNaive 1078 x_scale
+    let x_train = takeTrainMatrixNaive 1078 x_scale
+    let x_test = takeTestMatrixNaive 719 x_scale
 
     -- initializing tri values
     let tri_W = init_tri_W_values
@@ -211,11 +216,17 @@ main = do
 
     let delta_plus_1 = [-1.21164785e-08,  3.66611946e-04,  2.52650336e-04,  3.91324499e-04, 2.87442999e-04,  1.07657421e-04,  1.58559847e-04,  1.42728374e-04, 1.07571735e-04,  4.86890380e-04]
     --let hidden_layer = hidden_delta delta_plus_1 w_l z_l
-    let x_temp = x_train!!1
-    --print $ length x_temp
-    let h1 = x_temp
-    let z2 = feed_forwardZ x_temp w1 b1
-    let h2 = map sigmoid z2
-    let z3 = feed_forwardZ h2 w2 b2
-    let h3 = map sigmoid z3
-    print $ h3
+    
+    let y_pred = [0 .. 718]
+
+    -- readSTRef summed
+    a <- forM y_pred $ \i -> do
+        let h1 = x_test!!i
+        let z2 = feed_forwardZ h1 w1 b1
+        let h2 = map sigmoid z2
+        let z3 = feed_forwardZ h2 w2 b2
+        let h3 = map sigmoid z3
+        let position = maxIndex h3
+        return position
+
+    print $ accuracy a y_test
