@@ -5,6 +5,26 @@ import Control.Monad (replicateM)
 import Data.Typeable
 import System.Random
 
+sumList :: [Double] -> Double
+sumList [] = 0
+sumList (h:t) = h + sumList t
+
+sumProd :: [Double] -> [Double] -> Double
+sumProd xs ys = sumList $ zipWith (*) xs ys
+
+np_dot :: [[Double]] -> [Double] -> [Double]
+np_dot w_l delta = [(sumProd h delta) | h <- w_l]
+
+listToListOfLists [] = []
+listToListOfLists (h:t) = [h] : listToListOfLists t
+
+out_layer_delta :: [Double] -> [Double] -> [Double] -> [Double]
+out_layer_delta y h_out z_out = zipWith (*) (zipWith (-) h_out y) z_out
+
+hidden_delta :: [Double] -> [[Double]] -> [Double] -> [Double]
+hidden_delta delta_plus_1 w_l z_l = zipWith (*) fst z_l
+    where fst = np_dot w_l delta_plus_1
+
 init_tri_W_values :: ([[Double]], [[Double]])
 init_tri_W_values = (zero 30 64, zero 10 30)
 
@@ -58,6 +78,12 @@ takeTrainNaive n = reverse . take n . reverse
 takeTestNaive :: Int -> [a] -> [a]
 takeTestNaive n = take n
 
+takeTrainMatrixNaive :: Int -> [[a]] -> [[a]]
+takeTrainMatrixNaive n = reverse . take n . reverse 
+
+takeTestMatrixNaive :: Int -> [[a]] -> [[a]]
+takeTestMatrixNaive n = take n
+
 foldlZipWith::(a -> b -> c) -> (d -> c -> d) -> d -> [a] -> [b]  -> d
 foldlZipWith _ _ u [] _          = u
 foldlZipWith _ _ u _ []          = u
@@ -93,9 +119,9 @@ random_float i = (head i)/1000:random_float (tail i)
 random_gen_list 0 = []
 
 -- cria a lista de listas da segunda posição do W
-random_gen_list y = do
-    g <- getStdGen
-    return take 10 $ randomRs (0, 1000) g : random_gen_list y-1
+-- random_gen_list y = do
+--     g <- getStdGen
+--     return take 10 $ randomRs (0, 1000) g : random_gen_list y-1
 --random_float [] = 0
 
 --random_gen_W :: Int -> Int -> [[Double]]
@@ -116,6 +142,7 @@ setup_and_init_weights nn_structure = do--}
 
 
 main = do
+    -- setting neural network structure
     let nn_structure = [64, 30, 10] -- input, hidden, output
 
     -- reading and parsing dataset
@@ -136,9 +163,15 @@ main = do
     let y_train = takeTrainNaive 719 a
     let y_test = takeTestNaive 1078 a
 
+    let x_train = takeTrainMatrixNaive 719 x_scale
+    let x_test = takeTestMatrixNaive 1078 x_scale
+
     -- initializing tri values
     let tri_W = init_tri_W_values
     let tri_b = init_tri_b_values
+
+    -- feed forward
+    -- let z
 
     -- testing area
     let c = dot [[1, 2],[3, 4]] [[-3, -8, 3],[-2,  1, 4]]
@@ -149,7 +182,24 @@ main = do
     let hdf = replicate 3 (replicate 3 2)
 
     let res = sumMatrices azero hdf
+
+    -- end of testing area
+
     -- initializing 
     let w = random_gen_W 64 30 10
 
-    print x_scale
+    -- calculating out layer
+    let z_out = map deriv_f[ 10.97622676, 13.05608545, 12.15755343, 14.79820165, 13.81879473, 13.56181247, 14.68160928, 13.90150112,  9.81737804, 11.30229501]
+    let h_out = [0.9999829 , 0.99999786, 0.99999475, 0.99999963, 0.999999, 0.99999871, 0.99999958, 0.99999908, 0.99994551, 0.99998766]
+    let y = [0, 0, 0, 0, 1, 0, 0, 0, 0, 0]
+    let out_layer = out_layer_delta y h_out z_out
+
+    -- calculating hidden layer
+    let z_l = map deriv_f[ 2.04104047, -0.40176612,  1.1203371 , -0.12657657,  2.27092157, -0.56148751, -0.60633191, -1.67640165,  0.5778819,  2.1530739, 1.2299639 ,  1.69531853,  2.74005396, -1.49828843,  0.85051871,-1.89140984, -0.02889386, -0.25561791, -0.50356901, -1.93193024,0.22219219, -2.38848939,  0.673749  ,  1.68621401, -1.26106785,1.18627974,  1.06056405,  1.99820895, -0.19181241, -0.52293671]
+    let w_l_temp = parse_file "w_l.txt"
+    w_l_n <- w_l_temp
+    let w_l = transpose w_l_n
+    let delta_plus_1 = [-1.21164785e-08,  3.66611946e-04,  2.52650336e-04,  3.91324499e-04, 2.87442999e-04,  1.07657421e-04,  1.58559847e-04,  1.42728374e-04, 1.07571735e-04,  4.86890380e-04]
+    let hidden_layer = hidden_delta delta_plus_1 w_l z_l
+
+    print $ hidden_layer
