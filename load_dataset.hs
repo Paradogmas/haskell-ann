@@ -139,7 +139,6 @@ feed_forward x w1 w2 b1 b2 = do
     z2<-remove_bracket z2_temp
     let h1 = x
     let h2 = sigmoid z2
-
     return z2
 
 main = do
