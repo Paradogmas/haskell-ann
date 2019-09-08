@@ -112,33 +112,17 @@ absoluteAccuracy (h:t) (h2:t2)
     | otherwise = 0 + absoluteAccuracy t t2
 
 
+-- setting and initializing weight and bias
 random_float :: [Double] -> [Double]
 random_float [] = []
 random_float i = (head i)/1000:random_float (tail i)
 
-random_gen_list 0 = []
-
--- cria a lista de listas da segunda posição do W
--- random_gen_list y = do
---     g <- getStdGen
---     return take 10 $ randomRs (0, 1000) g : random_gen_list y-1
---random_float [] = 0
-
---random_gen_W :: Int -> Int -> [[Double]]
--- setting and initializing weight and bias
-
-
--- cria a lista de valores aleatórios do W
-random_gen_W x y z = do
+--random_generator :: Int -> Double
+random_generator n = do
     g <- getStdGen
-    let ys = random_gen_list y
-    let zs = take z $ randomRs (0, 1000) g
-    --let f_ys = random_float ys
-    let f_zs = random_float zs
-    return (ys, f_zs)
-
-{--setup_and_init_weights :: [Int] -> ([[Double]], [[Double]])
-setup_and_init_weights nn_structure = do--}
+    let ns = take n $ randomRs (0, 1000) g
+    let f_ns = random_float ns
+    return f_ns
 
 
 main = do
@@ -185,8 +169,8 @@ main = do
 
     -- end of testing area
 
-    -- initializing 
-    let w = random_gen_W 64 30 10
+    -- initializing random matrix
+    let w = random_generator 10
 
     -- calculating out layer
     let z_out = map deriv_f[ 10.97622676, 13.05608545, 12.15755343, 14.79820165, 13.81879473, 13.56181247, 14.68160928, 13.90150112,  9.81737804, 11.30229501]
