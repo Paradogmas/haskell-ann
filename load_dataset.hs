@@ -129,20 +129,15 @@ calc_zn :: [Double] -> [[Double]] -> [Double] -> [Double]
 calc_zn x w b = zipWith (+) fst b
     where fst = np_dot w x
 
---remove_bracket :: [[Double]] -> [Double] NÃO COLOCAR
+-- remove_bracket :: [[Double]] -> [Double]
 remove_bracket x = do
     return x!!0
 
-feed_forward::[Double]->[[Double]]->[[Double]]->[Double]->[Double]->([Double], [Double])
-feed_forward x w1 w2 b1 b2 = do
-    let z2_temp = calc_zn x w1 b1
-    z2<-remove_bracket z2_temp
-    let h1 = x
-    let h2 = sigmoid z2
-    let z3_temp = calc_zn [h2] w2 b2
-    z3<-remove_bracket z3_temp
-    let h3 = sigmoid z3
-    return z2, z3
+feed_forwardZ::[Double]->[[Double]]->[Double]->[Double]
+feed_forwardZ h w b= do
+    let z_temp = calc_zn h w b
+    z<-remove_bracket z_temp
+    return z
 
 main = do
     -- setting neural network structure
@@ -218,5 +213,9 @@ main = do
     --let hidden_layer = hidden_delta delta_plus_1 w_l z_l
     let x_temp = x_train!!1
     --print $ length x_temp
-    let ff = feed_forward x_temp w1 w2 b1 b2
-    print $ ff
+    let h1 = x_temp
+    let z2 = feed_forwardZ x_temp w1 b1
+    let h2 = map sigmoid z2
+    let z3 = feed_forwardZ h2 w2 b2
+    let h3 = map sigmoid z3
+    print $ h3
