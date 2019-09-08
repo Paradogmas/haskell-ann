@@ -123,7 +123,14 @@ random_generator n = do
     let ns = take n $ randomRs (0, 1000) g
     let f_ns = random_float ns
     return f_ns
+-- l_s = list size, n = list quantity i = iterator
+random_list_generator 1 n = []
 
+{-random_list_generator l_s n = do
+    let temp = random_generator l_s
+    a <- head temp
+    let r_list = head random_list_generator n-1 l_s ++ [a]
+    return r_list-}
 
 main = do
     -- setting neural network structure
@@ -180,7 +187,7 @@ main = do
 
     -- calculating hidden layer
     let z_l = map deriv_f[ 2.04104047, -0.40176612,  1.1203371 , -0.12657657,  2.27092157, -0.56148751, -0.60633191, -1.67640165,  0.5778819,  2.1530739, 1.2299639 ,  1.69531853,  2.74005396, -1.49828843,  0.85051871,-1.89140984, -0.02889386, -0.25561791, -0.50356901, -1.93193024,0.22219219, -2.38848939,  0.673749  ,  1.68621401, -1.26106785,1.18627974,  1.06056405,  1.99820895, -0.19181241, -0.52293671]
-    let w_l_temp = parse_file "w_l.txt"
+    let w_l_temp = parse_file "W2.txt"
     w_l_n <- w_l_temp
     let w_l = transpose w_l_n
     let delta_plus_1 = [-1.21164785e-08,  3.66611946e-04,  2.52650336e-04,  3.91324499e-04, 2.87442999e-04,  1.07657421e-04,  1.58559847e-04,  1.42728374e-04, 1.07571735e-04,  4.86890380e-04]
