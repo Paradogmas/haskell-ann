@@ -13,6 +13,9 @@ y_to_vec v i res
     | i == v = 1.0 : (y_to_vec v (i+1) res)
     | otherwise = 0.0 : (y_to_vec v (i+1) res)
 
+randomList :: (Random a) => Int -> [a]
+randomList seed = randoms(mkStdGen seed)
+
 maxIndex :: Ord a => [a] -> Int
 maxIndex = fst . maximumBy (comparing snd) . zip[0..]
 
@@ -218,6 +221,12 @@ main = do
 
     -- end of testing area
 
+    -- Generate random weight and bias
+    let weigth1 = replicate 30(take 64 (randomList 40 :: [Double]))
+    let weigth2 = replicate 10(take 30 (randomList 44 :: [Double]))
+    let bias1 = take 30 (randomList 45 :: [Double])
+    let bias2 = take 10 (randomList 46 :: [Double])
+    
     -- initializing random matrix
     let w1_temp = parse_file "W1.txt"
     w1 <- w1_temp
