@@ -7,6 +7,12 @@ import Data.Typeable
 import System.Random
 import Data.Ord
 
+y_to_vec :: Double -> Double -> [Double] -> [Double]
+y_to_vec _ 10 _ = []
+y_to_vec v i res
+    | i == v = 1.0 : (y_to_vec v (i+1) res)
+    | otherwise = 0.0 : (y_to_vec v (i+1) res)
+
 maxIndex :: Ord a => [a] -> Int
 maxIndex = fst . maximumBy (comparing snd) . zip[0..]
 
@@ -213,8 +219,6 @@ main = do
     -- end of testing area
 
     -- initializing random matrix
-    let w = random_generator 10
-    --
     let w1_temp = parse_file "W1.txt"
     w1 <- w1_temp
     let w2_temp = parse_file "W2.txt"
@@ -230,14 +234,14 @@ main = do
     let z_out = map deriv_f b1
     let h_out = map sigmoid z_out
     let y = [0, 0, 0, 0, 1, 0, 0, 0, 0, 0]
-    let out_layer = out_layer_delta y h_out z_out
+    let delta2 = out_layer_delta y h_out z_out
 
     -- calculating hidden layer
     let z_l = map deriv_f b1
     let w1_t = transpose w1
     let w2_t = transpose w2
     let delta_plus_1 = b2
-    let hidden_layer = hidden_delta delta_plus_1 w1_t z_l
+    let delta3 = hidden_delta delta_plus_1 w1_t z_l
     
     putStrLn ("\nFazendo predicao...")
     -- predicting number
