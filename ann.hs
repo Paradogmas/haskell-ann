@@ -6,6 +6,7 @@ import Control.Monad.Cont
 import Data.Typeable
 import System.Random
 import Data.Ord
+import Data.Time.Clock.POSIX (getPOSIXTime)
 
 y_to_vec :: Double -> Double -> [Double] -> [Double]
 y_to_vec _ 10 _ = []
@@ -222,10 +223,11 @@ main = do
     -- end of testing area
 
     -- Generate random weight and bias
-    let weigth1 = replicate 30(take 64 (randomList 40 :: [Double]))
-    let weigth2 = replicate 10(take 30 (randomList 44 :: [Double]))
-    let bias1 = take 30 (randomList 45 :: [Double])
-    let bias2 = take 10 (randomList 46 :: [Double])
+    seed <- (round . (* 1000)) <$> getPOSIXTime
+    let weigth1 = replicate 30(take 64 (randomList seed :: [Double]))
+    let weigth2 = replicate 10(take 30 (randomList seed :: [Double]))
+    let bias1 = take 30 (randomList seed :: [Double])
+    let bias2 = take 10 (randomList seed :: [Double])
     
     -- initializing random matrix
     let w1_temp = parse_file "W1.txt"
