@@ -241,41 +241,43 @@ main = do
     
     putStrLn ("\nInicializando delta W e delta b...")
     let tri_W = init_tri_W_values
-    let tri_W1 = fst tri_W
-    let tri_W2 = snd tri_W
+    let tri_W1 = weigth1
+    let tri_W2 = weigth2
     let tri_b = init_tri_b_values
-    let tri_b1 = fst tri_b
-    let tri_b2 = snd tri_b
+    let tri_b1 = bias1
+    let tri_b2 = bias2
     putStrLn ("Feito")
 
     train_n <- forM [0 .. 1077] $ \i -> do
         -- feed-forward
         let h1 = x_train!!i
-        let z2 = feed_forwardZ h1 w1 b1
+        let z2 = feed_forwardZ h1 tri_W1 tri_b1
         let h2 = map sigmoid z2
-        let z3 = feed_forwardZ h2 w2 b2
+        let z3 = feed_forwardZ h2 tri_W2 tri_b2
         let h3 = map sigmoid z3
 
         -- calculating out layer (delta 2)
-        let z_out = map deriv_f b1
+        let z_out = map deriv_f tri_b1
         let h_out = map sigmoid z_out
         let y_temp = y_train !! i
         let y = y_to_vec y_temp 0 []
         let delta2 = out_layer_delta y h_out z_out
 
         -- calculating hidden layer (delta 3)
-        let z_l = map deriv_f b1
-        let w1_t = transpose w1
-        let w2_t = transpose w2
-        let delta_plus_1 = b2
+        let z_l = map deriv_f tri_b1
+        let w1_t = transpose tri_W1
+        let w2_t = transpose tri_W2
+        let delta_plus_1 = tri_b2
         let delta3 = hidden_delta delta_plus_1 w1_t z_l
 
         -- calculating tri_w
         let list_delta3 = listToListOfLists delta3
-        let tri_W2 = dot list_delta3 [h2]
+        let tri_W2_t = dot list_delta3 [h2]
+        let tri_W2 = sumMatrices tri_W2_t tri_W2
 
         let list_delta2 = listToListOfLists delta2
-        let tri_W1 = dot list_delta2 [h1]
+        let tri_W1_t = dot list_delta2 [h1]
+        let tri_W1 = sumMatrices tri_W1_t tri_W1
 
         -- calculating tri_b
         let tri_b1 = delta2
@@ -286,11 +288,11 @@ main = do
     let train = last train_n
 
     let w_f = fst train
-    let w_1_f = fst w_f
-    let w_2_f = snd w_f
+    let w1_f = fst w_f
+    let w2_f = snd w_f
     let b_f = snd train
-    let b_2_f = fst b_f
-    let b_1_f = snd b_f
+    let b2_f = fst b_f
+    let b1_f = snd b_f
     
     putStrLn ("\nFazendo predicao...")
     -- predicting number
