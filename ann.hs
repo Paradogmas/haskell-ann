@@ -181,7 +181,7 @@ main = do
     putStrLn ("\n\n============= Exemplo de dado escalado do dataset =============\n")
     print (x_scale !! 1)
     
-    putStrLn ("\nFazendo split..")
+    putStrLn ("\nFazendo split...")
     -- splitting the data
     let y_train = takeTrainNaive 1078 a
     let y_test = takeTestNaive 719 a
@@ -191,9 +191,11 @@ main = do
 
     putStrLn ("Feito")
 
+    putStrLn ("\nInicializando delta W e delta b...")
     -- initializing tri values
     let tri_W = init_tri_W_values
     let tri_b = init_tri_b_values
+    putStrLn ("Feito")
 
     -- feed forward
     -- let z
@@ -226,7 +228,7 @@ main = do
 
     -- calculating out layer
     let z_out = map deriv_f b1
-    let h_out = [0.9999829 , 0.99999786, 0.99999475, 0.99999963, 0.999999, 0.99999871, 0.99999958, 0.99999908, 0.99994551, 0.99998766]
+    let h_out = map sigmoid z_out
     let y = [0, 0, 0, 0, 1, 0, 0, 0, 0, 0]
     let out_layer = out_layer_delta y h_out z_out
 
