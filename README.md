@@ -10,12 +10,13 @@ Para compilar o código, abra o GHCi e digite:
 ```
 Caso queira compilar de outra forma, use o GHC e digite na linha de comando do terminal:
 ```
-gch ann.hs
+ghc ann.hs
 ```
 A partir desse comando, ele irá gerar 3 arquivos:
 * ann
 * ann.hi
 * ann.o
+
 Para executar o projeto, digite na linha de comando:
 ```
 ./ann

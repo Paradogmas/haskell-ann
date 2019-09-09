@@ -22,5 +22,5 @@ main = do
     -- seed <- (round .(* 1000)) <$> getPOSIXTime
     -- putStrLn "Print 10 random numbers between 1 and 10"
     let numbers =  take 1 (genRandomNumbersBetween 10 seed (1, 10) :: [Int])
-    putStrLn (show numbers)
+    putStrLn (show seed)
     return ()
