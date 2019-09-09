@@ -77,17 +77,17 @@ sigmoid x = 1 / (1 + exp (-x))
 deriv_f :: Double -> Double
 deriv_f x = sigmoid x * (1 - sigmoid x)
 
-takeTrainNaive :: Int -> [a] -> [a]
-takeTrainNaive n = reverse . take n . reverse 
-
 takeTestNaive :: Int -> [a] -> [a]
-takeTestNaive n = take n
+takeTestNaive n = reverse . take n . reverse 
 
-takeTrainMatrixNaive :: Int -> [[a]] -> [[a]]
-takeTrainMatrixNaive n = reverse . take n . reverse 
+takeTrainNaive :: Int -> [a] -> [a]
+takeTrainNaive n = take n
 
 takeTestMatrixNaive :: Int -> [[a]] -> [[a]]
-takeTestMatrixNaive n = take n
+takeTestMatrixNaive n = reverse . take n . reverse 
+
+takeTrainMatrixNaive :: Int -> [[a]] -> [[a]]
+takeTrainMatrixNaive n = take n
 
 foldlZipWith::(a -> b -> c) -> (d -> c -> d) -> d -> [a] -> [b]  -> d
 foldlZipWith _ _ u [] _          = u

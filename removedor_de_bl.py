@@ -1,4 +1,4 @@
-f = open("W21.txt", "r")
+f = open("W22.txt", "r")
 i = 0
 string = ""
 numero_de_linhas = 50
@@ -8,5 +8,5 @@ while i < numero_de_linhas:
         string = string[:-1]
     i+=1
 
-escrever = open("W11.txt", "w")
+escrever = open("W21.txt", "w")
 escrever.write(string)
