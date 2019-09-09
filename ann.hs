@@ -148,26 +148,48 @@ main = do
     -- setting neural network structure
     let nn_structure = [64, 30, 10] -- input, hidden, output
 
+    putStrLn ("\n============= Estrutura =============")
+    putStrLn ("Entrada: 64 nodes")
+    putStrLn ("Oculta: 30 nodes")
+    putStrLn ("Saida: 10 nodes")
+
     -- reading and parsing dataset
     let b = parse_file "dataset.txt"
     data_set <- b
+
+    putStrLn ("\n\n============= Exemplo de dado do dataset =============\n")
+    print (data_set !! 1)
 
     -- reading and parsing target
     target_contents <- readFile "target.txt"
     let a = map read $ words target_contents :: [Int]
     
+    putStrLn ("\n\n============= Escalando dados =============")
     -- scalling the data
     let matrixC = concat data_set 
+
+    putStr ("\nMedia: ")
     let x_mean = mean matrixC
+    print (x_mean)
+
+    putStr ("Desvio Padrao: ")
     let x_stdev = stdev matrixC x_mean
+    print (x_stdev)
+
     let x_scale = [ scaleData y x_mean x_stdev | y <- data_set ]
+
+    putStrLn ("\n\n============= Exemplo de dado escalado do dataset =============\n")
+    print (x_scale !! 1)
     
+    putStrLn ("\nFazendo split..")
     -- splitting the data
     let y_train = takeTrainNaive 1078 a
     let y_test = takeTestNaive 719 a
 
     let x_train = takeTrainMatrixNaive 1078 x_scale
     let x_test = takeTestMatrixNaive 719 x_scale
+
+    putStrLn ("Feito")
 
     -- initializing tri values
     let tri_W = init_tri_W_values
@@ -203,24 +225,21 @@ main = do
     let b2 = head b2_t
 
     -- calculating out layer
-    let z_out = map deriv_f [10.97622676, 13.05608545, 12.15755343, 14.79820165, 13.81879473, 13.56181247, 14.68160928, 13.90150112,  9.81737804, 11.30229501]
+    let z_out = map deriv_f b1
     let h_out = [0.9999829 , 0.99999786, 0.99999475, 0.99999963, 0.999999, 0.99999871, 0.99999958, 0.99999908, 0.99994551, 0.99998766]
     let y = [0, 0, 0, 0, 1, 0, 0, 0, 0, 0]
     let out_layer = out_layer_delta y h_out z_out
 
     -- calculating hidden layer
-    let z_l = map deriv_f[ 2.04104047, -0.40176612,  1.1203371 , -0.12657657,  2.27092157, -0.56148751, -0.60633191, -1.67640165,  0.5778819,  2.1530739, 1.2299639 ,  1.69531853,  2.74005396, -1.49828843,  0.85051871,-1.89140984, -0.02889386, -0.25561791, -0.50356901, -1.93193024,0.22219219, -2.38848939,  0.673749  ,  1.68621401, -1.26106785,1.18627974,  1.06056405,  1.99820895, -0.19181241, -0.52293671]
+    let z_l = map deriv_f b1
+    let w1_t = transpose w1
+    let w2_t = transpose w2
+    let delta_plus_1 = b2
+    let hidden_layer = hidden_delta delta_plus_1 w1_t z_l
     
-    --let w1 = transpose w1
-    --let w2 = transpose w2
-
-    let delta_plus_1 = [-1.21164785e-08,  3.66611946e-04,  2.52650336e-04,  3.91324499e-04, 2.87442999e-04,  1.07657421e-04,  1.58559847e-04,  1.42728374e-04, 1.07571735e-04,  4.86890380e-04]
-    --let hidden_layer = hidden_delta delta_plus_1 w_l z_l
-    
-    let y_pred = [0 .. 718]
-
-    -- readSTRef summed
-    a <- forM y_pred $ \i -> do
+    putStrLn ("\nFazendo predicao...")
+    -- predicting number
+    y_pred <- forM [0 .. 718] $ \i -> do
         let h1 = x_test!!i
         let z2 = feed_forwardZ h1 w1 b1
         let h2 = map sigmoid z2
@@ -228,5 +247,13 @@ main = do
         let h3 = map sigmoid z3
         let position = maxIndex h3
         return position
+    
+    putStrLn ("Feito")
+    putStrLn ("============= Vetor predito =============\n")
+    print (y_pred)
 
-    print $ accuracy a y_test
+    putStrLn ("\n============= Resposta correta =============\n")
+    print (y_test)
+
+    putStr ("\nAcuracia: ")
+    print $ accuracy y_pred y_test
