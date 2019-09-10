@@ -7,6 +7,23 @@ import Data.Typeable
 import System.Random
 import Data.Ord
 import Data.Time.Clock.POSIX (getPOSIXTime)
+import Data.IORef
+
+subtractMatrix :: Double -> [[Double]] -> [[Double]]
+subtractMatrix x [] = []
+subtractMatrix x (m:ms) = subtractList x m : subtractMatrix x ms 
+
+subtractList :: Double -> [Double] -> [Double]
+subtractList x [] = []
+subtractList x (h:t) = h - x : subtractList x t
+
+multMatrix :: Double -> [[Double]] -> [[Double]]
+multMatrix x [] = []
+multMatrix x (m:ms) = multList x m : multMatrix x ms 
+
+multList :: Double -> [Double] -> [Double]
+multList x [] = []
+multList x (h:t) = h * x : multList x t
 
 y_to_vec :: Int -> Int -> [Double] -> [Double]
 y_to_vec _ 10 _ = []
@@ -23,6 +40,9 @@ maxIndex = fst . maximumBy (comparing snd) . zip[0..]
 sumList :: [Double] -> Double
 sumList [] = 0
 sumList (h:t) = h + sumList t
+
+somaLista :: [Double] -> [Double] -> [Double]
+somaLista x y = zipWith (+) x y
 
 sumProd :: [Double] -> [Double] -> Double
 sumProd xs ys = sumList $ zipWith (*) xs ys
@@ -238,98 +258,94 @@ main = do
     -- Training neural network
 
     -- initializing tri values
-    
-    train_n <- forM [0..1] $ \k -> do
-        putStrLn ("\nInicializando delta W e delta b...")
+    ref <- newIORef ([] :: [Double])
+    ref_w1 <- newIORef ([[]] :: [[Double]])
+    ref_w2 <- newIORef ([[]] :: [[Double]])
+    ref_b1 <- newIORef ([] :: [Double])
+    ref_b2 <- newIORef ([] :: [Double])
+
+    writeIORef ref_w1 (w1)
+    writeIORef ref_w2 (w2)
+    writeIORef ref_b1 (b1)
+    writeIORef ref_b2 (b2)
+    train_n <- forM [0..2999] $ \k -> do
+        -- putStrLn ("\nInicializando delta W e delta b...")
         let tri_W = init_tri_W_values
         -- print $ tri_W
         let tri_W1 = fst tri_W
+        modifyIORef ref (1:)
         -- print $ length tri_W1 
         let tri_W2 = snd tri_W
         -- print $ length tri_W2
         let tri_b = init_tri_b_values
         let tri_b1 = fst tri_b
         let tri_b2 = snd tri_b
-        -- print $ tri_b2
-        -- print $ tri_W
-        putStrLn ("Feito")
-        forM [0..1] $ \i -> do
+        w1_temp <- readIORef ref_w1
+        w2_temp <- readIORef ref_w2
+        b1_temp <- readIORef ref_b1
+        b2_temp <- readIORef ref_b2
+        forM [0..1077] $ \i -> do
             -- feed-forward
             let h1 = x_train!!i
-            -- print $ h1
-            let z2 = feed_forwardZ h1 w1 b1
-            -- print $ z2
+            let z2 = feed_forwardZ h1 w1_temp b1
             let h2 = map sigmoid z2
-            -- print $ h2
             let z3 = feed_forwardZ h2 w2 b2
-            -- print $ z3
             let h3 = map sigmoid z3
-            -- print $ h3
             -- calculating out layer (delta 2)
             let z_out = map deriv_f z3
             -- let h_out = map sigmoid z_out
             let y_temp = y_train !! i
-            -- print $ y_temp
             let y = y_to_vec y_temp 0 []
-            -- print $ y
             let delta3 = out_layer_delta y h3 z_out
-            -- print $ delta3
             -- calculating hidden layer (delta 3)
             let z_l = map deriv_f b1
-            -- print $ z_l
-            let w1_t = transpose w1
-            -- print $ w1_t
+            let w1_t = transpose w1_temp
             let w2_t = transpose w2
-            -- print $ w2_t
             -- let delta_plus_3 = b2
             let delta2 = hidden_delta delta3 w2_t z_l
 
             -- calculating tri_w
             let list_delta3 = listToListOfLists delta3
-            -- print list_delta3
             let tri_W2_t = dot list_delta3 [h2]
-            -- print $ tri_W2_t
             let sum_tri_W2 = sumMatrices tri_W2_t tri_W2
-            -- print $ sum_tri_W2
             -- putStrLn ("type of action1 is: " ++ (show (typeOf tri_W2_t)))
             let tri_W2 = sum_tri_W2
-            -- print $ tri_W2
-            -- print $ tri_W2
-            -- print $ length tri_W2
             let list_delta2 = listToListOfLists delta2
-            -- print $ list_delta2
             let tri_W1_t = dot list_delta2 [h1]
-            -- print $ length tri_W1
-            -- print $ tri_W1_t
             let sum_tri_W1 = sumMatrices tri_W1_t tri_W1
-            -- print $ length sum_tri_W1
             let tri_W1 = sum_tri_W1
 
             -- calculating tri_b
             let tri_b1 = delta2
-            -- print $ tri_b1
             let tri_b2 = delta3
-            -- print $ tri_b2
-            
-            print $ (k, i)
+            if i == 1077 then do 
+                let mult_w1 = multMatrix (-2.31910945e-4) tri_W1 
+                let res_w1 = sumMatrices w1_temp mult_w1
+                writeIORef ref_w1 (res_w1)
+                let mult_w2 = multMatrix (-2.31910945e-4) tri_W2 
+                let res_w2 = sumMatrices w2_temp mult_w2
+                writeIORef ref_w2(res_w2)
+                let mult_b1 = multList (-2.31910945e-4) tri_b1
+                let res_b1 = somaLista b1_temp mult_b1
+                writeIORef ref_b1(res_b1)
+                let mult_b2 = multList (-2.31910945e-4) tri_b2
+                let res_b2 = somaLista b2_temp mult_b2
+                writeIORef ref_b2(res_b2)
+            else return ()
             
             return $ ((tri_W1, tri_W2), (tri_b1, tri_b2))
-    -- let train = last train_n
-    -- print $ train
-    -- let w_f = fst train
-    -- let w1_f = fst w_f
-    -- let w2_f = snd w_f
-    -- let b_f = snd train
-    -- let b2_f = fst b_f
-    -- let b1_f = snd b_f
+    aux_w1 <- readIORef ref_w1
+    aux_w2 <- readIORef ref_w2
+    aux_b1 <- readIORef ref_b1
+    aux_b2 <- readIORef ref_b2
     
     putStrLn ("\nFazendo predicao...")
     -- predicting number
     y_pred <- forM [0 .. 718] $ \i -> do
         let h1 = x_test!!i
-        let z2 = feed_forwardZ h1 w1 b1
+        let z2 = feed_forwardZ h1 aux_w1 aux_b1
         let h2 = map sigmoid z2
-        let z3 = feed_forwardZ h2 w2 b2
+        let z3 = feed_forwardZ h2 aux_w2 aux_b2
         let h3 = map sigmoid z3
         let position = maxIndex h3
         return position
