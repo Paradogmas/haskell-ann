@@ -47,10 +47,10 @@ init_tri_b_values :: ([Double], [Double])
 init_tri_b_values = (replicate 30 0, replicate 10 0)
 
 sumMatrices :: [[Double]] -> [[Double]] -> [[Double]]
-sumMatrices a b = [(zipWith (+) ha hb) | ha <- a, hb <- b]
+sumMatrices a b = zipWith (zipWith (+)) a b
 
 zero :: Int -> Int -> [[Double]]
-zero x y = replicate y (replicate x 0)
+zero x y = replicate x (replicate y 0)
 
 variancia :: [Double] -> Double -> [Double]
 variancia xs m = [(x_new-m)**2 | x_new<-xs]
@@ -239,60 +239,89 @@ main = do
 
     -- initializing tri values
     
-    putStrLn ("\nInicializando delta W e delta b...")
-    let tri_W = init_tri_W_values
-    let tri_W1 = weigth1
-    let tri_W2 = weigth2
-    let tri_b = init_tri_b_values
-    let tri_b1 = bias1
-    let tri_b2 = bias2
-    putStrLn ("Feito")
+    train_n <- forM [0..1] $ \k -> do
+        putStrLn ("\nInicializando delta W e delta b...")
+        let tri_W = init_tri_W_values
+        -- print $ tri_W
+        let tri_W1 = fst tri_W
+        -- print $ length tri_W1 
+        let tri_W2 = snd tri_W
+        -- print $ length tri_W2
+        let tri_b = init_tri_b_values
+        let tri_b1 = fst tri_b
+        let tri_b2 = snd tri_b
+        -- print $ tri_b2
+        -- print $ tri_W
+        putStrLn ("Feito")
+        forM [0..1] $ \i -> do
+            -- feed-forward
+            let h1 = x_train!!i
+            -- print $ h1
+            let z2 = feed_forwardZ h1 w1 b1
+            -- print $ z2
+            let h2 = map sigmoid z2
+            -- print $ h2
+            let z3 = feed_forwardZ h2 w2 b2
+            -- print $ z3
+            let h3 = map sigmoid z3
+            -- print $ h3
+            -- calculating out layer (delta 2)
+            let z_out = map deriv_f z3
+            -- let h_out = map sigmoid z_out
+            let y_temp = y_train !! i
+            -- print $ y_temp
+            let y = y_to_vec y_temp 0 []
+            -- print $ y
+            let delta3 = out_layer_delta y h3 z_out
+            -- print $ delta3
+            -- calculating hidden layer (delta 3)
+            let z_l = map deriv_f b1
+            -- print $ z_l
+            let w1_t = transpose w1
+            -- print $ w1_t
+            let w2_t = transpose w2
+            -- print $ w2_t
+            -- let delta_plus_3 = b2
+            let delta2 = hidden_delta delta3 w2_t z_l
 
-    train_n <- forM [0 .. 1077] $ \i -> do
-        -- feed-forward
-        let h1 = x_train!!i
-        let z2 = feed_forwardZ h1 tri_W1 tri_b1
-        let h2 = map sigmoid z2
-        let z3 = feed_forwardZ h2 tri_W2 tri_b2
-        let h3 = map sigmoid z3
+            -- calculating tri_w
+            let list_delta3 = listToListOfLists delta3
+            -- print list_delta3
+            let tri_W2_t = dot list_delta3 [h2]
+            -- print $ tri_W2_t
+            let sum_tri_W2 = sumMatrices tri_W2_t tri_W2
+            -- print $ sum_tri_W2
+            -- putStrLn ("type of action1 is: " ++ (show (typeOf tri_W2_t)))
+            let tri_W2 = sum_tri_W2
+            -- print $ tri_W2
+            -- print $ tri_W2
+            -- print $ length tri_W2
+            let list_delta2 = listToListOfLists delta2
+            -- print $ list_delta2
+            let tri_W1_t = dot list_delta2 [h1]
+            -- print $ length tri_W1
+            -- print $ tri_W1_t
+            let sum_tri_W1 = sumMatrices tri_W1_t tri_W1
+            -- print $ length sum_tri_W1
+            let tri_W1 = sum_tri_W1
 
-        -- calculating out layer (delta 2)
-        let z_out = map deriv_f tri_b1
-        let h_out = map sigmoid z_out
-        let y_temp = y_train !! i
-        let y = y_to_vec y_temp 0 []
-        let delta2 = out_layer_delta y h_out z_out
-
-        -- calculating hidden layer (delta 3)
-        let z_l = map deriv_f tri_b1
-        let w1_t = transpose tri_W1
-        let w2_t = transpose tri_W2
-        let delta_plus_1 = tri_b2
-        let delta3 = hidden_delta delta_plus_1 w1_t z_l
-
-        -- calculating tri_w
-        let list_delta3 = listToListOfLists delta3
-        let tri_W2_t = dot list_delta3 [h2]
-        let tri_W2 = sumMatrices tri_W2_t tri_W2
-
-        let list_delta2 = listToListOfLists delta2
-        let tri_W1_t = dot list_delta2 [h1]
-        let tri_W1 = sumMatrices tri_W1_t tri_W1
-
-        -- calculating tri_b
-        let tri_b1 = delta2
-        let tri_b2 = delta3
-
-        return ((tri_W1, tri_W2), (tri_b1, tri_b2))
-    
-    let train = last train_n
-
-    let w_f = fst train
-    let w1_f = fst w_f
-    let w2_f = snd w_f
-    let b_f = snd train
-    let b2_f = fst b_f
-    let b1_f = snd b_f
+            -- calculating tri_b
+            let tri_b1 = delta2
+            -- print $ tri_b1
+            let tri_b2 = delta3
+            -- print $ tri_b2
+            
+            print $ (k, i)
+            
+            return $ ((tri_W1, tri_W2), (tri_b1, tri_b2))
+    -- let train = last train_n
+    -- print $ train
+    -- let w_f = fst train
+    -- let w1_f = fst w_f
+    -- let w2_f = snd w_f
+    -- let b_f = snd train
+    -- let b2_f = fst b_f
+    -- let b1_f = snd b_f
     
     putStrLn ("\nFazendo predicao...")
     -- predicting number
